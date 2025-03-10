@@ -1,22 +1,12 @@
-# LLM Probability Metrics
+# Measuring LLM Distribution Statistics
 
-This repository contains a Python module that extracts probability distribution metrics from the output logits of a causal language model. It leverages the [Hugging Face Transformers](https://github.com/huggingface/transformers) library and supports analysis using popular models such as `distilgpt2`.
+Large Language Models (LLMs) are probability distributions. The fact that LLMs can also sometimes be useful from the perspective of creating intelligent systems (that is to say systems with specific capabilities), sometimes blinds us to the fact that regardless of what capabilities LLMs may have they are still also abstract probability distributions. 
 
-## Features
+Although quite a lot of effort has gone into analyzing LLMs in terms of usefulness for various tasks relatively little effort seems to have gone into their analysis and characterization as purely abstract vector categorical valued probability distributions. It certainly has not yet become the norm to share a set of summary statistics which directly characterize the LLM distribution along with task performance based statistics. But there is no reason that could not (or no reason that it should not) become standard practice. Certainly for the individual practitioner a rich set of characterizing statistics above and beyond task performance may act as useful diagnostics. 
 
-- **Tokenization & Inference:** Easily tokenize input text and generate output logits using a pretrained causal language model.
-- **Probability Distribution Metrics:** Compute a variety of metrics from model output:
-  - **Maximum Logit:** The highest logit value per token.
-  - **LogSumExp:** The log-sum-exp value across the logits.
-  - **Extension Entropy:** Entropy of the predicted distribution.
-  - **Log Probability of Actual Token:** The log probability corresponding to the true continuation.
-- **Greedy Decoding:** Decode tokens by selecting the highest logit at each time step.
-- **Example Script:** A `main()` function demonstrates usage with a sample sentence.
+If someone was trying to analyze samples drawn from a real valued distribution and they only considered the mean of the samples you would probably be a little underwhelmed by the depth of their analysis. At the very least you would expect a mean, standard deviation, and sample size. You would also likely assume that any analyst considering such a distribution would have at least looked at a histogram of the distribution and would know things like whether the distribution is positively or negatively skewed relative to the mean, whether the distribution appears to be multi-modal, etc, etc. 
 
-## Installation
+But for the incredibly intricate probability distributions represented by modern large language models often the only abstract characterizations of these probability distributions is by reduction to a single mean value, the average value of the log probability of the next token evaluated on some dataset (also called the training and validation loss).
+If we would not be satisfied by the characterization of a set of samples drawn from a 1D real valued distribution by simply giving its mean value, then we should not be satisfied by trying to characterize the probability distribution of an LLM by giving its mean loss value on a dataset. There are hundreds of other interesting and informative statistics which we can use to characterize, compare, and analyze different LLMs and different document corpora.
 
-1. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/your-username/llm_probability_metrics.git
-   cd llm_probability_metrics
+For example the mean log probability of the actual next token (which is the cross entropy loss most commonly used as a training objective) is a very informative quantity so it makes sense to measure it. But why not also measure the standard deviation of that same quantity? Knowing the value of the average cross entropy per token of a model you are training won't tell you that your model has collapsed to predicting a uniform distribution over possible tokens. But, knowing that the standard deviation of the log probability per token is almost exactly 0 would. 

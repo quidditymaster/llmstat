@@ -1,3 +1,6 @@
+
+__version__ = "0.0.1"
+
 import numpy as np
 import torch
 import scipy.special
@@ -55,6 +58,24 @@ def decode_individual_tokens(token_ids, tokenizer):
     # Ensure each id is an integer before decoding
     return [tokenizer.decode(int(id_)) for id_ in token_ids]
 
+def count_logp_bins(
+    logp_values, #array shaped, N x V
+    logp_thresholds, #array of thresholds, must be sorted
+):
+    """
+    returns occurrence counts for each row of the logp_values array row by row. 
+    The first column of the output represents the number of values less than the smallest value of logp_thresholds and the last column represents values greater than the greatest value of the logp_thresholds.
+    The logp_thresholds array must be in sorted order for this function to work properly. 
+    """
+    N = len(logp_values)
+    n_bins = len(logp_thresholds) + 1
+    bin_counts = np.zeros((N, n_bins))
+    for i in range(N):
+        bin_counts[i] = np.bincount(
+            np.searchsorted(logp_thresholds, logp_values[i]), 
+            minlength=n_bins
+        )
+    return bin_counts
 
 def calculate_distribution_statistics(
         text: str,
@@ -66,7 +87,7 @@ def calculate_distribution_statistics(
 
     Metrics computed per token include:
         - max_logit: Maximum predicted logit value over all possible tokens.
-        - logsumexp: LogSumExp of the logits. This is the logarithm of the normalization constant of the probability distribution of the predicted token distribution.
+        - logsumexp: LogSumExp of the logits. This is the logarithm of the normalization constant of the predicted distribution.
         - extension_entropy: Entropy of the predicted distribution.
         - log_prob_of_actual: Log probability of the actual next token.
 
